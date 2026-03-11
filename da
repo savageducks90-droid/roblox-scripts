@@ -1,97 +1,127 @@
 local Players = game:GetService("Players")
+local RS = game:GetService("ReplicatedStorage")
+
 local player = Players.LocalPlayer
 
--- Safe loader
+-- loader
 local function run(url)
-	local ok, code = pcall(function()
+	local ok,code = pcall(function()
 		return game:HttpGet(url)
 	end)
-	if not ok then
-		warn("Download failed:", url)
-		return
-	end
-	local f, err = loadstring(code)
-	if not f then
-		warn("Compile error:", err)
-		return
-	end
-	local ok2, err2 = pcall(f)
-	if not ok2 then
-		warn("Runtime error:", err2)
+	if ok then
+		local f = loadstring(code)
+		if f then
+			f()
+		end
 	end
 end
 
 -- GUI
 local gui = Instance.new("ScreenGui")
-gui.Name = "SavageHub"
 gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0,260,0,210)
-main.Position = UDim2.new(0.5,-130,0.5,-105)
-main.BackgroundColor3 = Color3.fromRGB(28,28,28)
+main.Size = UDim2.new(0,260,0,220)
+main.Position = UDim2.new(0.5,-130,0.5,-110)
+main.BackgroundColor3 = Color3.fromRGB(20,20,20)
 main.BorderSizePixel = 0
 main.Active = true
 main.Draggable = true
 main.Parent = gui
 
+-- top bar
+local top = Instance.new("Frame")
+top.Size = UDim2.new(1,0,0,32)
+top.BackgroundColor3 = Color3.fromRGB(120,0,0)
+top.BorderSizePixel = 0
+top.Parent = main
+
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,0,0,32)
-title.BackgroundColor3 = Color3.fromRGB(38,38,38)
+title.Size = UDim2.new(1,-40,1,0)
+title.Position = UDim2.new(0,10,0,0)
+title.BackgroundTransparency = 1
 title.Text = "Savage Hub"
 title.TextColor3 = Color3.new(1,1,1)
 title.Font = Enum.Font.SourceSansBold
 title.TextScaled = true
-title.Parent = main
+title.Parent = top
 
--- Tab buttons bar
+-- minimize button
+local minimize = Instance.new("TextButton")
+minimize.Size = UDim2.new(0,32,1,0)
+minimize.Position = UDim2.new(1,-32,0,0)
+minimize.Text = "-"
+minimize.BackgroundColor3 = Color3.fromRGB(160,0,0)
+minimize.TextColor3 = Color3.new(1,1,1)
+minimize.Font = Enum.Font.SourceSansBold
+minimize.TextScaled = true
+minimize.Parent = top
+
+local minimized = false
+
+minimize.MouseButton1Click:Connect(function()
+
+	if minimized then
+		main.Size = UDim2.new(0,260,0,220)
+		minimized = false
+	else
+		main.Size = UDim2.new(0,260,0,32)
+		minimized = true
+	end
+
+end)
+
+-- tabs
 local tabsBar = Instance.new("Frame")
 tabsBar.Size = UDim2.new(1,0,0,28)
 tabsBar.Position = UDim2.new(0,0,0,32)
-tabsBar.BackgroundColor3 = Color3.fromRGB(33,33,33)
+tabsBar.BackgroundColor3 = Color3.fromRGB(30,0,0)
 tabsBar.BorderSizePixel = 0
 tabsBar.Parent = main
 
-local tabsLayout = Instance.new("UIListLayout")
-tabsLayout.FillDirection = Enum.FillDirection.Horizontal
-tabsLayout.Parent = tabsBar
+local layout = Instance.new("UIListLayout")
+layout.FillDirection = Enum.FillDirection.Horizontal
+layout.Parent = tabsBar
 
--- Content area
 local content = Instance.new("Frame")
 content.Size = UDim2.new(1,0,1,-60)
 content.Position = UDim2.new(0,0,0,60)
 content.BackgroundTransparency = 1
 content.Parent = main
 
--- Create tab pages
 local pages = {}
 
 local function createPage(name)
+
 	local page = Instance.new("Frame")
 	page.Size = UDim2.new(1,0,1,0)
 	page.BackgroundTransparency = 1
 	page.Visible = false
 	page.Parent = content
 
-	local layout = Instance.new("UIListLayout")
-	layout.Padding = UDim.new(0,6)
-	layout.Parent = page
+	local l = Instance.new("UIListLayout")
+	l.Padding = UDim.new(0,6)
+	l.Parent = page
 
 	pages[name] = page
+
 	return page
 end
 
 local function showPage(name)
+
 	for k,v in pairs(pages) do
 		v.Visible = (k == name)
 	end
+
 end
 
-local function createTab(name)
+local function tab(name)
+
 	local b = Instance.new("TextButton")
 	b.Size = UDim2.new(0.33,0,1,0)
-	b.BackgroundColor3 = Color3.fromRGB(45,45,45)
+	b.BackgroundColor3 = Color3.fromRGB(60,0,0)
 	b.TextColor3 = Color3.new(1,1,1)
 	b.Font = Enum.Font.SourceSansBold
 	b.TextScaled = true
@@ -101,48 +131,99 @@ local function createTab(name)
 	b.MouseButton1Click:Connect(function()
 		showPage(name)
 	end)
+
 end
 
--- Create pages
-local espPage = createPage("ESP")
-local playersPage = createPage("Players")
-local utilPage = createPage("Utility")
+local function button(parent,text,callback)
 
--- Tabs
-createTab("ESP")
-createTab("Players")
-createTab("Utility")
-
-showPage("ESP")
-
--- Button creator
-local function addButton(parent, text, callback)
 	local b = Instance.new("TextButton")
 	b.Size = UDim2.new(1,-20,0,30)
-	b.BackgroundColor3 = Color3.fromRGB(50,50,50)
+	b.BackgroundColor3 = Color3.fromRGB(50,0,0)
 	b.TextColor3 = Color3.new(1,1,1)
 	b.Font = Enum.Font.SourceSansBold
 	b.TextScaled = true
 	b.Text = text
 	b.Parent = parent
+
 	b.MouseButton1Click:Connect(callback)
+
 end
 
+-- pages
+local espPage = createPage("ESP")
+local playersPage = createPage("Players")
+local utilPage = createPage("Utility")
+
+tab("ESP")
+tab("Players")
+tab("Utility")
+
+showPage("ESP")
+
 -- ESP TAB
-addButton(espPage,"Load ESP",function()
+button(espPage,"Load ESP",function()
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp_fixed.lua")
 end)
 
 -- PLAYERS TAB
-addButton(playersPage,"Spectate",function()
+button(playersPage,"Spectate",function()
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/spectate.lua")
 end)
 
-addButton(playersPage,"Chakra Sense Users",function()
+button(playersPage,"Chakra Sense Users Script",function()
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/refs/heads/main/chakra.lua")
 end)
 
+-- AUTO DETECT CHAKRA USERS
+local list = Instance.new("TextLabel")
+list.Size = UDim2.new(1,-10,0,80)
+list.BackgroundTransparency = 1
+list.TextColor3 = Color3.new(1,1,1)
+list.Font = Enum.Font.SourceSans
+list.TextWrapped = true
+list.TextYAlignment = Enum.TextYAlignment.Top
+list.Text = "Chakra Users:\nNone"
+list.Parent = playersPage
+
+local function updateChakra()
+
+	local cooldowns = RS:FindFirstChild("Cooldowns")
+
+	if not cooldowns then return end
+
+	local users = {}
+
+	for _,folder in ipairs(cooldowns:GetChildren()) do
+		if folder:FindFirstChild("Chakra Sense") then
+			table.insert(users,folder.Name)
+		end
+	end
+
+	if #users == 0 then
+		list.Text = "Chakra Users:\nNone"
+	else
+		list.Text = "Chakra Users:\n"..table.concat(users,"\n")
+	end
+
+end
+
+if RS:FindFirstChild("Cooldowns") then
+
+	for _,f in ipairs(RS.Cooldowns:GetChildren()) do
+		f.ChildAdded:Connect(updateChakra)
+		f.ChildRemoved:Connect(updateChakra)
+	end
+
+end
+
+task.spawn(function()
+	while true do
+		updateChakra()
+		task.wait(2)
+	end
+end)
+
 -- UTILITY TAB
-addButton(utilPage,"Close Hub",function()
+button(utilPage,"Close Hub",function()
 	gui:Destroy()
 end)

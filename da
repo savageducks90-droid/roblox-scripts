@@ -1,45 +1,41 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
--- Function to safely load a script from a URL
+-- safe loader
 local function getAndRun(url)
-    if not url then
-        warn("No URL specified")
-        return
-    end
 
-    local ok, response = pcall(function()
-        return game:HttpGet(url)
-    end)
+	local success, result = pcall(function()
+		return game:HttpGet(url)
+	end)
 
-    if not ok then
-        warn("Failed to download script from: " .. url)
-        warn(response)
-        return
-    end
+	if not success then
+		warn("Failed to download:", url)
+		return
+	end
 
-    local func, err = loadstring(response)
-    if not func then
-        warn("Failed to compile script: " .. url)
-        warn(err)
-        return
-    end
+	local func, err = loadstring(result)
 
-    local ran, runErr = pcall(func)
-    if not ran then
-        warn("Error running script: " .. url)
-        warn(runErr)
-    end
+	if not func then
+		warn("Compile error:", err)
+		return
+	end
+
+	local ran, runtimeErr = pcall(func)
+
+	if not ran then
+		warn("Runtime error:", runtimeErr)
+	end
+
 end
 
--- GUI Setup
+-- GUI
 local gui = Instance.new("ScreenGui")
-gui.Name = "MyHub"
+gui.Name = "SavageHub"
 gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,200,0,160)
+frame.Size = UDim2.new(0,200,0,180)
 frame.Position = UDim2.new(0,20,0,200)
 frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
 frame.BorderSizePixel = 0
@@ -48,7 +44,7 @@ frame.Parent = gui
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1,0,0,30)
 title.BackgroundTransparency = 1
-title.Text = "Script Hub"
+title.Text = "Savage Hub"
 title.TextColor3 = Color3.new(1,1,1)
 title.Font = Enum.Font.SourceSansBold
 title.TextScaled = true
@@ -58,28 +54,35 @@ local layout = Instance.new("UIListLayout")
 layout.Padding = UDim.new(0,6)
 layout.Parent = frame
 
-local function createButton(name, callback)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1,-10,0,30)
-    button.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    button.TextColor3 = Color3.new(1,1,1)
-    button.TextScaled = true
-    button.Font = Enum.Font.SourceSansBold
-    button.Text = name
-    button.Parent = frame
+local function createButton(name,callback)
 
-    button.MouseButton1Click:Connect(callback)
+	local button = Instance.new("TextButton")
+	button.Size = UDim2.new(1,-10,0,30)
+	button.BackgroundColor3 = Color3.fromRGB(40,40,40)
+	button.TextColor3 = Color3.new(1,1,1)
+	button.TextScaled = true
+	button.Font = Enum.Font.SourceSansBold
+	button.Text = name
+	button.Parent = frame
+
+	button.MouseButton1Click:Connect(callback)
+
 end
 
--- Buttons
-createButton("Load ESP", function()
-    getAndRun("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp_fixed.lua")
+-- buttons
+
+createButton("Load ESP",function()
+	getAndRun("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp_fixed.lua")
 end)
 
-createButton("Load Spectate", function()
-    getAndRun("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/spectate.lua")
+createButton("Load Spectate",function()
+	getAndRun("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/spectate.lua")
 end)
 
-createButton("Close Hub", function()
-    gui:Destroy()
+createButton("Chakra Sense Users",function()
+	getAndRun("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/refs/heads/main/chakra.lua")
+end)
+
+createButton("Close Hub",function()
+	gui:Destroy()
 end)

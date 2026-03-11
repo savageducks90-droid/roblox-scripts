@@ -14,7 +14,7 @@ if playerGui:FindFirstChild("SavageHub") then
 	playerGui.SavageHub:Destroy()
 end
 
--- loader function
+-- loader
 local function run(url)
 
 	print("Loading:",url)
@@ -51,7 +51,7 @@ gui.Enabled = true
 gui.Parent = playerGui
 
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0,270,0,260)
+main.Size = UDim2.new(0,270,0,300)
 main.Position = UDim2.new(0,200,0,200)
 main.BackgroundColor3 = Color3.fromRGB(15,15,15)
 main.BorderSizePixel = 0
@@ -90,7 +90,7 @@ local minimized = false
 minimize.MouseButton1Click:Connect(function()
 
 	if minimized then
-		main.Size = UDim2.new(0,270,0,260)
+		main.Size = UDim2.new(0,270,0,300)
 	else
 		main.Size = UDim2.new(0,270,0,34)
 	end
@@ -156,6 +156,14 @@ button("Fruit Finder",function()
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/fruit_esp.lua")
 end)
 
+button("Fruit Radar",function()
+	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/fruit_radar.lua")
+end)
+
+button("Fruit Route Scan",function()
+	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/fruit_route_scan.lua")
+end)
+
 -- chakra auto detect
 local chakraLabel = Instance.new("TextLabel")
 chakraLabel.Size = UDim2.new(0,220,0,60)
@@ -199,7 +207,7 @@ button("Close Hub",function()
 	gui.Enabled = false
 end)
 
--- RightShift toggle
+-- toggle hub
 UIS.InputBegan:Connect(function(input,gp)
 
 	if gp then return end

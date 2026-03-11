@@ -1,5 +1,6 @@
 repeat task.wait() until game:IsLoaded()
 repeat task.wait() until game.Players.LocalPlayer
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UIS = game:GetService("UserInputService")
@@ -9,23 +10,33 @@ local player = Players.LocalPlayer
 -- loader
 local function run(url)
 
-	local success,code = pcall(function()
+	local success, code = pcall(function()
 		return game:HttpGet(url)
 	end)
 
-	if success then
-		local func = loadstring(code)
+	if success and code then
+		
+		local func, err = loadstring(code)
+
 		if func then
-			func()
+			local ran, runtimeErr = pcall(func)
+
+			if not ran then
+				warn("Script runtime error:", runtimeErr)
+			end
+		else
+			warn("Loadstring error:", err)
 		end
+
 	else
-		warn("Failed loading:",url)
+		warn("Failed loading:", url)
 	end
 
 end
 
 -- GUI
 local gui = Instance.new("ScreenGui")
+gui.Name = "SavageHub"
 gui.ResetOnSpawn = false
 gui.Enabled = false
 gui.Parent = player:WaitForChild("PlayerGui")

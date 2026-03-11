@@ -1,34 +1,38 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
-local function runScript(url)
-    print("Loading:", url)
-
-    local success, code = pcall(function()
-        return game:HttpGet(url)
-    end)
-
-    if not success then
-        warn("Failed to download script:", url)
-        warn(code)
+-- Function to safely load a script from a URL
+local function getAndRun(url)
+    if not url then
+        warn("No URL specified")
         return
     end
 
-    local func, err = loadstring(code)
+    local ok, response = pcall(function()
+        return game:HttpGet(url)
+    end)
+
+    if not ok then
+        warn("Failed to download script from: " .. url)
+        warn(response)
+        return
+    end
+
+    local func, err = loadstring(response)
     if not func then
-        warn("Script compile error:")
+        warn("Failed to compile script: " .. url)
         warn(err)
         return
     end
 
-    local ok, runtimeErr = pcall(func)
-    if not ok then
-        warn("Script runtime error:")
-        warn(runtimeErr)
+    local ran, runErr = pcall(func)
+    if not ran then
+        warn("Error running script: " .. url)
+        warn(runErr)
     end
 end
 
-
+-- GUI Setup
 local gui = Instance.new("ScreenGui")
 gui.Name = "MyHub"
 gui.ResetOnSpawn = false
@@ -54,30 +58,28 @@ local layout = Instance.new("UIListLayout")
 layout.Padding = UDim.new(0,6)
 layout.Parent = frame
 
-local function createButton(name,callback)
+local function createButton(name, callback)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1,-10,0,30)
+    button.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    button.TextColor3 = Color3.new(1,1,1)
+    button.TextScaled = true
+    button.Font = Enum.Font.SourceSansBold
+    button.Text = name
+    button.Parent = frame
 
-	local button = Instance.new("TextButton")
-	button.Size = UDim2.new(1,-10,0,30)
-	button.BackgroundColor3 = Color3.fromRGB(40,40,40)
-	button.TextColor3 = Color3.new(1,1,1)
-	button.TextScaled = true
-	button.Font = Enum.Font.SourceSansBold
-	button.Text = name
-	button.Parent = frame
-
-	button.MouseButton1Click:Connect(callback)
-
+    button.MouseButton1Click:Connect(callback)
 end
 
-
-createButton("ESP Script",function()
-	runScript("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp.lua")
+-- Buttons
+createButton("Load ESP", function()
+    getAndRun("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp_fixed.lua")
 end)
 
-createButton("Spectate Script",function()
-	runScript("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/spectate.lua")
+createButton("Load Spectate", function()
+    getAndRun("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/spectate.lua")
 end)
 
-createButton("Close Hub",function()
-	gui:Destroy()
+createButton("Close Hub", function()
+    gui:Destroy()
 end)

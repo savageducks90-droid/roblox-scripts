@@ -198,5 +198,19 @@ task.spawn(function()
 	end
 end)
 
-button("Close Hub",function(
+button("Close Hub",function()
+	gui.Enabled = false
+end)
+
+UIS.InputBegan:Connect(function(input,gp)
+
+	if gp then return end
+
+	if input.KeyCode == Enum.KeyCode.RightShift then
+		gui.Enabled = not gui.Enabled
+	end
+
+end)
+
+print("Savage Hub Loaded")
 ```

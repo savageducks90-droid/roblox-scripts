@@ -4,7 +4,9 @@ local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
 local function createESP(player)
-    if player == LocalPlayer then return end
+    if player == LocalPlayer then 
+        return 
+    end
 
     local function apply(character)
         local head = character:WaitForChild("Head")

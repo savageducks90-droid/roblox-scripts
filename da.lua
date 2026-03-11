@@ -1,24 +1,25 @@
-```lua
+
 repeat task.wait() until game:IsLoaded()
-repeat task.wait() until game.Players.LocalPlayer
-repeat task.wait() until game.Players.LocalPlayer:FindFirstChild("PlayerGui")
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UIS = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+repeat task.wait() until player
+repeat task.wait() until player:FindFirstChild("PlayerGui")
 
--- remove duplicate hub
+local playerGui = player.PlayerGui
+
+-- prevent duplicates
 if playerGui:FindFirstChild("SavageHub") then
 	playerGui.SavageHub:Destroy()
 end
 
--- loader
+-- loader function
 local function run(url)
 
-	print("Loading:",url)
+	print("Loading:", url)
 
 	local success,code = pcall(function()
 		return game:HttpGet(url)
@@ -36,10 +37,10 @@ local function run(url)
 		return
 	end
 
-	local ran,runtimeErr = pcall(func)
+	local ok,runtime = pcall(func)
 
-	if not ran then
-		warn("Script Error:",runtimeErr)
+	if not ok then
+		warn("Runtime Error:",runtime)
 	end
 
 end
@@ -48,13 +49,12 @@ end
 local gui = Instance.new("ScreenGui")
 gui.Name = "SavageHub"
 gui.ResetOnSpawn = false
-gui.Enabled = true
 gui.Parent = playerGui
 
 local main = Instance.new("Frame")
 main.Size = UDim2.new(0,270,0,320)
 main.Position = UDim2.new(0.5,-135,0.5,-160)
-main.BackgroundColor3 = Color3.fromRGB(15,15,15)
+main.BackgroundColor3 = Color3.fromRGB(20,20,20)
 main.BorderSizePixel = 0
 main.Active = true
 main.Draggable = true
@@ -165,50 +165,11 @@ button("Fruit Route Scan",function()
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/fruit_route_scan.lua")
 end)
 
--- chakra auto detect
-local chakraLabel = Instance.new("TextLabel")
-chakraLabel.Size = UDim2.new(0,220,0,60)
-chakraLabel.BackgroundTransparency = 1
-chakraLabel.TextColor3 = Color3.new(1,1,1)
-chakraLabel.Font = Enum.Font.SourceSans
-chakraLabel.TextWrapped = true
-chakraLabel.TextYAlignment = Enum.TextYAlignment.Top
-chakraLabel.Text = "Chakra Users: None"
-chakraLabel.Parent = container
-
-local function update()
-
-	local cooldowns = ReplicatedStorage:FindFirstChild("Cooldowns")
-	if not cooldowns then return end
-
-	local list = {}
-
-	for _,folder in ipairs(cooldowns:GetChildren()) do
-		if folder:FindFirstChild("Chakra Sense") then
-			table.insert(list,folder.Name)
-		end
-	end
-
-	if #list == 0 then
-		chakraLabel.Text = "Chakra Users: None"
-	else
-		chakraLabel.Text = "Chakra Users:\n"..table.concat(list,"\n")
-	end
-
-end
-
-task.spawn(function()
-	while true do
-		update()
-		task.wait(2)
-	end
-end)
-
 button("Close Hub",function()
 	gui.Enabled = false
 end)
 
--- toggle hub
+-- toggle with RightShift
 UIS.InputBegan:Connect(function(input,gp)
 
 	if gp then return end

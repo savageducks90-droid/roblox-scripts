@@ -4,72 +4,91 @@ local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
 local function createESP(player)
-    if player == LocalPlayer then 
-        return 
-    end
+	if player == LocalPlayer then return end
 
-    local function apply(character)
-        local head = character:WaitForChild("Head")
-        local humanoid = character:WaitForChild("Humanoid")
+	local function apply(character)
 
-        local gui = Instance.new("BillboardGui")
-        gui.Name = "MiniESP"
-        gui.Size = UDim2.new(0,100,0,30)
-        gui.StudsOffset = Vector3.new(0,2.5,0)
-        gui.AlwaysOnTop = true
-        gui.Parent = head
+		local head = character:WaitForChild("Head",5)
+		local humanoid = character:WaitForChild("Humanoid",5)
 
-        local nameLabel = Instance.new("TextLabel")
-        nameLabel.Size = UDim2.new(1,0,0,14)
-        nameLabel.BackgroundTransparency = 1
-        nameLabel.Text = player.Name
-        nameLabel.TextColor3 = Color3.new(1,1,1)
-        nameLabel.TextStrokeTransparency = 0
-        nameLabel.Font = Enum.Font.SourceSansBold
-        nameLabel.TextScaled = true
-        nameLabel.Parent = gui
+		if not head or not humanoid then return end
 
-        local hpBG = Instance.new("Frame")
-        hpBG.Size = UDim2.new(0.7,0,0,6)
-        hpBG.Position = UDim2.new(0,0,0,16)
-        hpBG.BackgroundColor3 = Color3.fromRGB(40,40,40)
-        hpBG.BorderSizePixel = 0
-        hpBG.Parent = gui
+		-- prevent duplicate ESP
+		if head:FindFirstChild("MiniESP") then
+			head.MiniESP:Destroy()
+		end
 
-        local hpBar = Instance.new("Frame")
-        hpBar.Size = UDim2.new(1,0,1,0)
-        hpBar.BackgroundColor3 = Color3.fromRGB(255,0,0)
-        hpBar.BorderSizePixel = 0
-        hpBar.Parent = hpBG
+		local gui = Instance.new("BillboardGui")
+		gui.Name = "MiniESP"
+		gui.Size = UDim2.new(0,100,0,30)
+		gui.StudsOffset = Vector3.new(0,2.5,0)
+		gui.AlwaysOnTop = true
+		gui.Parent = head
 
-        local hpText = Instance.new("TextLabel")
-        hpText.Size = UDim2.new(0.3,0,0,10)
-        hpText.Position = UDim2.new(0.72,0,0,14)
-        hpText.BackgroundTransparency = 1
-        hpText.TextColor3 = Color3.new(1,1,1)
-        hpText.TextStrokeTransparency = 0
-        hpText.Font = Enum.Font.SourceSansBold
-        hpText.TextScaled = true
-        hpText.Parent = gui
+		local nameLabel = Instance.new("TextLabel")
+		nameLabel.Size = UDim2.new(1,0,0,14)
+		nameLabel.BackgroundTransparency = 1
+		nameLabel.Text = player.Name
+		nameLabel.TextColor3 = Color3.new(1,1,1)
+		nameLabel.TextStrokeTransparency = 0
+		nameLabel.Font = Enum.Font.SourceSansBold
+		nameLabel.TextScaled = true
+		nameLabel.Parent = gui
 
-        RunService.RenderStepped:Connect(function()
-            if humanoid then
-                local hpPercent = humanoid.Health / humanoid.MaxHealth
-                hpBar.Size = UDim2.new(hpPercent, 0, 1, 0)
-                hpText.Text = math.floor(humanoid.Health).."/"..math.floor(humanoid.MaxHealth)
-            end
-        end)
-    end
+		local hpBG = Instance.new("Frame")
+		hpBG.Size = UDim2.new(0.7,0,0,6)
+		hpBG.Position = UDim2.new(0,0,0,16)
+		hpBG.BackgroundColor3 = Color3.fromRGB(40,40,40)
+		hpBG.BorderSizePixel = 0
+		hpBG.Parent = gui
 
-    if player.Character then
-        apply(player.Character)
-    end
+		local hpBar = Instance.new("Frame")
+		hpBar.Size = UDim2.new(1,0,1,0)
+		hpBar.BackgroundColor3 = Color3.fromRGB(255,0,0)
+		hpBar.BorderSizePixel = 0
+		hpBar.Parent = hpBG
 
-    player.CharacterAdded:Connect(apply)
+		local hpText = Instance.new("TextLabel")
+		hpText.Size = UDim2.new(0.3,0,0,10)
+		hpText.Position = UDim2.new(0.72,0,0,14)
+		hpText.BackgroundTransparency = 1
+		hpText.TextColor3 = Color3.new(1,1,1)
+		hpText.TextStrokeTransparency = 0
+		hpText.Font = Enum.Font.SourceSansBold
+		hpText.TextScaled = true
+		hpText.Parent = gui
+
+		-- update health safely
+		local connection
+		connection = RunService.RenderStepped:Connect(function()
+
+			if not humanoid or humanoid.Health <= 0 then
+				connection:Disconnect()
+				return
+			end
+
+			local hpPercent = humanoid.Health / humanoid.MaxHealth
+			hpBar.Size = UDim2.new(hpPercent,0,1,0)
+
+			hpText.Text =
+				math.floor(humanoid.Health)..
+				"/"..math.floor(humanoid.MaxHealth)
+
+		end)
+
+	end
+
+	if player.Character then
+		apply(player.Character)
+	end
+
+	player.CharacterAdded:Connect(apply)
 end
 
-for _, p in pairs(Players:GetPlayers()) do
-    createESP(p)
+-- apply to current players
+for _,p in pairs(Players:GetPlayers()) do
+	createESP(p)
 end
 
+-- apply to new players
 Players.PlayerAdded:Connect(createESP)

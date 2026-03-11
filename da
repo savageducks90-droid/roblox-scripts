@@ -46,11 +46,11 @@ end
 -------------------------------------------------
 
 createButton("ESP Script",function()
-	loadstring(game:HttpGet("PUT_ESP_SCRIPT_LINK_HERE"))()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp.lua"))()
 end)
 
 createButton("Spectate Script",function()
-	loadstring(game:HttpGet("PUT_SPECTATE_SCRIPT_LINK_HERE"))()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/spectate.lua"))()
 end)
 
 createButton("Close Hub",function()

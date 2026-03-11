@@ -14,31 +14,31 @@ if playerGui:FindFirstChild("SavageHub") then
 	playerGui.SavageHub:Destroy()
 end
 
--- safe loader
+-- loader function
 local function run(url)
 
-	print("Loading:", url)
+	print("Loading:",url)
 
-	local success, code = pcall(function()
+	local success,code = pcall(function()
 		return game:HttpGet(url)
 	end)
 
 	if not success then
-		warn("HTTP Failed:", url)
+		warn("HTTP failed:",url)
 		return
 	end
 
-	local func, err = loadstring(code)
+	local func,err = loadstring(code)
 
 	if not func then
-		warn("Loadstring error:", err)
+		warn("Loadstring error:",err)
 		return
 	end
 
-	local ran, runtimeErr = pcall(func)
+	local ran,runtimeErr = pcall(func)
 
 	if not ran then
-		warn("Script runtime error:", runtimeErr)
+		warn("Script error:",runtimeErr)
 	end
 
 end
@@ -51,7 +51,7 @@ gui.Enabled = true
 gui.Parent = playerGui
 
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0,270,0,230)
+main.Size = UDim2.new(0,270,0,260)
 main.Position = UDim2.new(0,200,0,200)
 main.BackgroundColor3 = Color3.fromRGB(15,15,15)
 main.BorderSizePixel = 0
@@ -90,7 +90,7 @@ local minimized = false
 minimize.MouseButton1Click:Connect(function()
 
 	if minimized then
-		main.Size = UDim2.new(0,270,0,230)
+		main.Size = UDim2.new(0,270,0,260)
 	else
 		main.Size = UDim2.new(0,270,0,34)
 	end
@@ -150,6 +150,10 @@ end)
 
 button("Chakra Sense Users",function()
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/chakra.lua")
+end)
+
+button("Fruit Finder",function()
+	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/fruit_esp.lua")
 end)
 
 -- chakra auto detect

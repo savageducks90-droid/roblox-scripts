@@ -7,10 +7,15 @@ local camera = workspace.CurrentCamera
 
 StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList,false)
 
+-- prevent duplicate gui
+if player.PlayerGui:FindFirstChild("SpectateMenu") then
+	player.PlayerGui.SpectateMenu:Destroy()
+end
+
 local currentSpectate = nil
 local playerButtons = {}
 
--- Spectate functions
+-- spectate functions
 local function returnToSelf()
 	if player.Character and player.Character:FindFirstChild("Humanoid") then
 		camera.CameraSubject = player.Character.Humanoid
@@ -25,8 +30,19 @@ local function spectate(plr)
 	end
 end
 
+-- auto reset if spectated player dies
+local function watchCharacter(plr)
+	plr.CharacterAdded:Connect(function(char)
+		if currentSpectate == plr then
+			task.wait(0.2)
+			spectate(plr)
+		end
+	end)
+end
+
 -- GUI
 local gui = Instance.new("ScreenGui")
+gui.Name = "SpectateMenu"
 gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
@@ -37,28 +53,24 @@ mainFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = gui
 
--- ScrollFrame
 local scroll = Instance.new("ScrollingFrame")
 scroll.Size = UDim2.new(1,0,1,0)
-scroll.CanvasSize = UDim2.new(0,0,0,0)
 scroll.ScrollBarThickness = 6
 scroll.BorderSizePixel = 0
 scroll.BackgroundTransparency = 1
 scroll.Parent = mainFrame
 
--- Layout
 local layout = Instance.new("UIListLayout")
 layout.Padding = UDim.new(0,4)
-layout.SortOrder = Enum.SortOrder.LayoutOrder
 layout.Parent = scroll
 
 layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-	scroll.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y + 6)
+	scroll.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y+6)
 end)
 
 local teamFrames = {}
 
--- Create team section
+-- team section
 local function createTeamFrame(team)
 
 	local section = Instance.new("Frame")
@@ -81,26 +93,25 @@ local function createTeamFrame(team)
 	headerText.TextScaled = true
 	headerText.Parent = header
 
-	local playerContainer = Instance.new("Frame")
-	playerContainer.Size = UDim2.new(1,0,0,0)
-	playerContainer.Position = UDim2.new(0,0,0,22)
-	playerContainer.BackgroundTransparency = 1
-	playerContainer.Parent = section
+	local container = Instance.new("Frame")
+	container.Size = UDim2.new(1,0,0,0)
+	container.Position = UDim2.new(0,0,0,22)
+	container.BackgroundTransparency = 1
+	container.Parent = section
 
 	local list = Instance.new("UIListLayout")
 	list.Padding = UDim.new(0,2)
-	list.SortOrder = Enum.SortOrder.LayoutOrder
-	list.Parent = playerContainer
+	list.Parent = container
 
 	list:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-		playerContainer.Size = UDim2.new(1,0,0,list.AbsoluteContentSize.Y)
-		section.Size = UDim2.new(1,0,0,list.AbsoluteContentSize.Y + 22)
+		container.Size = UDim2.new(1,0,0,list.AbsoluteContentSize.Y)
+		section.Size = UDim2.new(1,0,0,list.AbsoluteContentSize.Y+22)
 	end)
 
-	teamFrames[team] = playerContainer
+	teamFrames[team] = container
 end
 
--- Player entry
+-- player button
 local function createPlayerEntry(plr)
 
 	local team = plr.Team
@@ -112,9 +123,7 @@ local function createPlayerEntry(plr)
 	button.BackgroundColor3 = Color3.fromRGB(40,40,40)
 	button.BorderSizePixel = 0
 	button.TextColor3 = Color3.new(1,1,1)
-
 	button.Text = plr.DisplayName.." (@"..plr.Name..")"
-
 	button.Font = Enum.Font.SourceSans
 	button.TextScaled = true
 	button.Parent = teamFrames[team]
@@ -130,19 +139,14 @@ local function createPlayerEntry(plr)
 	end)
 end
 
--- Clear list
-local function clearPlayerEntries()
-	for plr,btn in pairs(playerButtons) do
-		if btn then
-			btn:Destroy()
-		end
-	end
-	playerButtons = {}
-end
+-- refresh list
+local function refresh()
 
--- Refresh list
-local function refreshPlayerList()
-	clearPlayerEntries()
+	for _,btn in pairs(playerButtons) do
+		btn:Destroy()
+	end
+
+	playerButtons = {}
 
 	for _,plr in pairs(Players:GetPlayers()) do
 		if plr ~= player then
@@ -151,29 +155,39 @@ local function refreshPlayerList()
 	end
 end
 
--- Create teams
+-- create teams
 for _,team in pairs(Teams:GetTeams()) do
 	createTeamFrame(team)
 end
 
--- Initial load
-refreshPlayerList()
+refresh()
 
--- Refresh every 30 seconds
-task.spawn(function()
-	while true do
-		task.wait(30)
-		refreshPlayerList()
-	end
+-- player join
+Players.PlayerAdded:Connect(function(plr)
+	watchCharacter(plr)
+	task.wait(0.5)
+	refresh()
 end)
 
--- Player join
-Players.PlayerAdded:Connect(function()
-	task.wait(1)
-	refreshPlayerList()
-end)
-
--- Player leave
+-- player leave
 Players.PlayerRemoving:Connect(function()
-	refreshPlayerList()
+	refresh()
+end)
+
+-- team change
+Players.PlayerAdded:Connect(function(plr)
+	plr:GetPropertyChangedSignal("Team"):Connect(refresh)
+end)
+
+-- watch existing players
+for _,plr in pairs(Players:GetPlayers()) do
+	if plr ~= player then
+		watchCharacter(plr)
+	end
+end
+
+-- return camera when you respawn
+player.CharacterAdded:Connect(function()
+	task.wait(0.2)
+	returnToSelf()
 end)

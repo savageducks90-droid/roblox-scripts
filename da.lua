@@ -1,35 +1,44 @@
 repeat task.wait() until game:IsLoaded()
 repeat task.wait() until game.Players.LocalPlayer
+repeat task.wait() until game.Players.LocalPlayer:FindFirstChild("PlayerGui")
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UIS = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
--- loader
+-- prevent duplicate hub
+if playerGui:FindFirstChild("SavageHub") then
+	playerGui.SavageHub:Destroy()
+end
+
+-- safe loader
 local function run(url)
+
+	print("Loading:", url)
 
 	local success, code = pcall(function()
 		return game:HttpGet(url)
 	end)
 
-	if success and code then
-		
-		local func, err = loadstring(code)
+	if not success then
+		warn("HTTP Failed:", url)
+		return
+	end
 
-		if func then
-			local ran, runtimeErr = pcall(func)
+	local func, err = loadstring(code)
 
-			if not ran then
-				warn("Script runtime error:", runtimeErr)
-			end
-		else
-			warn("Loadstring error:", err)
-		end
+	if not func then
+		warn("Loadstring error:", err)
+		return
+	end
 
-	else
-		warn("Failed loading:", url)
+	local ran, runtimeErr = pcall(func)
+
+	if not ran then
+		warn("Script runtime error:", runtimeErr)
 	end
 
 end
@@ -38,12 +47,12 @@ end
 local gui = Instance.new("ScreenGui")
 gui.Name = "SavageHub"
 gui.ResetOnSpawn = false
-gui.Enabled = false
-gui.Parent = player:WaitForChild("PlayerGui")
+gui.Enabled = true
+gui.Parent = playerGui
 
 local main = Instance.new("Frame")
 main.Size = UDim2.new(0,270,0,230)
-main.Position = UDim2.new(0.5,-135,0.5,-115)
+main.Position = UDim2.new(0,200,0,200)
 main.BackgroundColor3 = Color3.fromRGB(15,15,15)
 main.BorderSizePixel = 0
 main.Active = true
@@ -196,3 +205,5 @@ UIS.InputBegan:Connect(function(input,gp)
 	end
 
 end)
+
+print("Savage Hub Loaded")

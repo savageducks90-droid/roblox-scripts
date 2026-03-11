@@ -1,15 +1,16 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UIS = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 
--- script loader
+-- loader
 local function run(url)
-	local success,code = pcall(function()
+	local ok,code = pcall(function()
 		return game:HttpGet(url)
 	end)
 
-	if success then
+	if ok then
 		local f = loadstring(code)
 		if f then
 			f()
@@ -20,6 +21,7 @@ end
 -- GUI
 local gui = Instance.new("ScreenGui")
 gui.ResetOnSpawn = false
+gui.Enabled = false
 gui.Parent = player.PlayerGui
 
 local main = Instance.new("Frame")
@@ -31,7 +33,7 @@ main.Active = true
 main.Draggable = true
 main.Parent = gui
 
--- TOP BAR
+-- top bar
 local top = Instance.new("Frame")
 top.Size = UDim2.new(1,0,0,34)
 top.BackgroundColor3 = Color3.fromRGB(170,0,0)
@@ -47,7 +49,7 @@ title.Font = Enum.Font.GothamBold
 title.TextSize = 16
 title.Parent = top
 
--- MINIMIZE
+-- minimize button
 local minimize = Instance.new("TextButton")
 minimize.Size = UDim2.new(0,30,1,0)
 minimize.Position = UDim2.new(1,-30,0,0)
@@ -71,7 +73,7 @@ minimize.MouseButton1Click:Connect(function()
 
 end)
 
--- BUTTON AREA
+-- container
 local container = Instance.new("Frame")
 container.Size = UDim2.new(1,0,1,-34)
 container.Position = UDim2.new(0,0,0,34)
@@ -87,7 +89,7 @@ local padding = Instance.new("UIPadding")
 padding.PaddingTop = UDim.new(0,8)
 padding.Parent = container
 
--- BUTTON CREATOR
+-- button creator
 local function button(text,callback)
 
 	local b = Instance.new("TextButton")
@@ -111,7 +113,7 @@ local function button(text,callback)
 
 end
 
--- BUTTONS
+-- buttons
 button("Load ESP",function()
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp_fixed.lua")
 end)
@@ -124,7 +126,7 @@ button("Chakra Sense Users",function()
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/refs/heads/main/chakra.lua")
 end)
 
--- AUTO DETECT DISPLAY
+-- chakra auto detect
 local chakraLabel = Instance.new("TextLabel")
 chakraLabel.Size = UDim2.new(0,220,0,60)
 chakraLabel.BackgroundTransparency = 1
@@ -164,5 +166,16 @@ task.spawn(function()
 end)
 
 button("Close Hub",function()
-	gui:Destroy()
+	gui.Enabled = false
+end)
+
+-- RIGHT SHIFT TOGGLE
+UIS.InputBegan:Connect(function(input,gameProcessed)
+
+	if gameProcessed then return end
+
+	if input.KeyCode == Enum.KeyCode.RightShift then
+		gui.Enabled = not gui.Enabled
+	end
+
 end)

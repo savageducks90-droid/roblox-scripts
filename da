@@ -1,53 +1,122 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
--- loader
+-- Safe loader
 local function run(url)
-	local s,code = pcall(function()
+	local ok, code = pcall(function()
 		return game:HttpGet(url)
 	end)
-
-	if s then
-		local f = loadstring(code)
-		if f then
-			f()
-		else
-			warn("Script compile error")
-		end
-	else
-		warn("Download failed:",url)
+	if not ok then
+		warn("Download failed:", url)
+		return
+	end
+	local f, err = loadstring(code)
+	if not f then
+		warn("Compile error:", err)
+		return
+	end
+	local ok2, err2 = pcall(f)
+	if not ok2 then
+		warn("Runtime error:", err2)
 	end
 end
 
 -- GUI
 local gui = Instance.new("ScreenGui")
+gui.Name = "SavageHub"
 gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,220,0,180)
-frame.Position = UDim2.new(0.5,-110,0.5,-90)
-frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-frame.BorderSizePixel = 0
-frame.Active = true
-frame.Draggable = true
-frame.Parent = gui
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0,260,0,210)
+main.Position = UDim2.new(0.5,-130,0.5,-105)
+main.BackgroundColor3 = Color3.fromRGB(28,28,28)
+main.BorderSizePixel = 0
+main.Active = true
+main.Draggable = true
+main.Parent = gui
 
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,0,0,30)
-title.BackgroundColor3 = Color3.fromRGB(40,40,40)
+title.Size = UDim2.new(1,0,0,32)
+title.BackgroundColor3 = Color3.fromRGB(38,38,38)
 title.Text = "Savage Hub"
 title.TextColor3 = Color3.new(1,1,1)
 title.Font = Enum.Font.SourceSansBold
 title.TextScaled = true
-title.Parent = frame
+title.Parent = main
 
-local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0,6)
-layout.Parent = frame
+-- Tab buttons bar
+local tabsBar = Instance.new("Frame")
+tabsBar.Size = UDim2.new(1,0,0,28)
+tabsBar.Position = UDim2.new(0,0,0,32)
+tabsBar.BackgroundColor3 = Color3.fromRGB(33,33,33)
+tabsBar.BorderSizePixel = 0
+tabsBar.Parent = main
 
-local function button(text,callback)
+local tabsLayout = Instance.new("UIListLayout")
+tabsLayout.FillDirection = Enum.FillDirection.Horizontal
+tabsLayout.Parent = tabsBar
 
+-- Content area
+local content = Instance.new("Frame")
+content.Size = UDim2.new(1,0,1,-60)
+content.Position = UDim2.new(0,0,0,60)
+content.BackgroundTransparency = 1
+content.Parent = main
+
+-- Create tab pages
+local pages = {}
+
+local function createPage(name)
+	local page = Instance.new("Frame")
+	page.Size = UDim2.new(1,0,1,0)
+	page.BackgroundTransparency = 1
+	page.Visible = false
+	page.Parent = content
+
+	local layout = Instance.new("UIListLayout")
+	layout.Padding = UDim.new(0,6)
+	layout.Parent = page
+
+	pages[name] = page
+	return page
+end
+
+local function showPage(name)
+	for k,v in pairs(pages) do
+		v.Visible = (k == name)
+	end
+end
+
+local function createTab(name)
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(0.33,0,1,0)
+	b.BackgroundColor3 = Color3.fromRGB(45,45,45)
+	b.TextColor3 = Color3.new(1,1,1)
+	b.Font = Enum.Font.SourceSansBold
+	b.TextScaled = true
+	b.Text = name
+	b.Parent = tabsBar
+
+	b.MouseButton1Click:Connect(function()
+		showPage(name)
+	end)
+end
+
+-- Create pages
+local espPage = createPage("ESP")
+local playersPage = createPage("Players")
+local utilPage = createPage("Utility")
+
+-- Tabs
+createTab("ESP")
+createTab("Players")
+createTab("Utility")
+
+showPage("ESP")
+
+-- Button creator
+local function addButton(parent, text, callback)
 	local b = Instance.new("TextButton")
 	b.Size = UDim2.new(1,-20,0,30)
 	b.BackgroundColor3 = Color3.fromRGB(50,50,50)
@@ -55,24 +124,25 @@ local function button(text,callback)
 	b.Font = Enum.Font.SourceSansBold
 	b.TextScaled = true
 	b.Text = text
-	b.Parent = frame
-
+	b.Parent = parent
 	b.MouseButton1Click:Connect(callback)
-
 end
 
-button("ESP",function()
+-- ESP TAB
+addButton(espPage,"Load ESP",function()
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp_fixed.lua")
 end)
 
-button("Spectate",function()
+-- PLAYERS TAB
+addButton(playersPage,"Spectate",function()
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/spectate.lua")
 end)
 
-button("Chakra Sense Users",function()
+addButton(playersPage,"Chakra Sense Users",function()
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/refs/heads/main/chakra.lua")
 end)
 
-button("Close",function()
+-- UTILITY TAB
+addButton(utilPage,"Close Hub",function()
 	gui:Destroy()
 end)

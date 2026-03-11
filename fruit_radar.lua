@@ -4,9 +4,10 @@ local workspace = game:GetService("Workspace")
 
 local player = Players.LocalPlayer
 
-local fruits = {
+local items = {
 	["Life Up Fruit"] = true,
-	["Chakra Fruit"] = true
+	["Chakra Fruit"] = true,
+	["Mango"] = true
 }
 
 local function createRadar(obj)
@@ -18,7 +19,7 @@ local function createRadar(obj)
 
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "FruitRadar"
-	gui.Size = UDim2.new(0,140,0,28)
+	gui.Size = UDim2.new(0,140,0,30)
 	gui.StudsOffset = Vector3.new(0,3,0)
 	gui.AlwaysOnTop = true
 	gui.Parent = part
@@ -34,8 +35,10 @@ local function createRadar(obj)
 
 	RunService.RenderStepped:Connect(function()
 
-		if not player.Character then return end
-		local root = player.Character:FindFirstChild("HumanoidRootPart")
+		local char = player.Character
+		if not char then return end
+
+		local root = char:FindFirstChild("HumanoidRootPart")
 		if not root then return end
 
 		local dist = (root.Position - part.Position).Magnitude
@@ -46,24 +49,17 @@ local function createRadar(obj)
 
 end
 
--- scan world
-local function scan()
-
-	for _,v in pairs(workspace:GetDescendants()) do
-		if fruits[v.Name] then
-			createRadar(v)
-		end
+for _,v in pairs(workspace:GetDescendants()) do
+	if items[v.Name] then
+		createRadar(v)
 	end
-
 end
 
-scan()
-
 workspace.DescendantAdded:Connect(function(obj)
-
-	if fruits[obj.Name] then
-		task.wait(0.1)
+	if items[obj.Name] then
+		task.wait(.1)
 		createRadar(obj)
 	end
-
 end)
+
+print("Fruit Radar Loaded")

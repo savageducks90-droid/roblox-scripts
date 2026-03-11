@@ -6,23 +6,27 @@ local player = Players.LocalPlayer
 
 -- loader
 local function run(url)
-	local ok,code = pcall(function()
+
+	local success,code = pcall(function()
 		return game:HttpGet(url)
 	end)
 
-	if ok then
-		local f = loadstring(code)
-		if f then
-			f()
+	if success then
+		local func = loadstring(code)
+		if func then
+			func()
 		end
+	else
+		warn("Failed loading:",url)
 	end
+
 end
 
 -- GUI
 local gui = Instance.new("ScreenGui")
 gui.ResetOnSpawn = false
 gui.Enabled = false
-gui.Parent = player.PlayerGui
+gui.Parent = player:WaitForChild("PlayerGui")
 
 local main = Instance.new("Frame")
 main.Size = UDim2.new(0,270,0,230)
@@ -65,11 +69,11 @@ minimize.MouseButton1Click:Connect(function()
 
 	if minimized then
 		main.Size = UDim2.new(0,270,0,230)
-		minimized = false
 	else
 		main.Size = UDim2.new(0,270,0,34)
-		minimized = true
 	end
+
+	minimized = not minimized
 
 end)
 
@@ -123,7 +127,7 @@ button("Load Spectate",function()
 end)
 
 button("Chakra Sense Users",function()
-	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/refs/heads/main/chakra.lua")
+	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/chakra.lua")
 end)
 
 -- chakra auto detect
@@ -169,10 +173,10 @@ button("Close Hub",function()
 	gui.Enabled = false
 end)
 
--- RIGHT SHIFT TOGGLE
-UIS.InputBegan:Connect(function(input,gameProcessed)
+-- RightShift toggle
+UIS.InputBegan:Connect(function(input,gp)
 
-	if gameProcessed then return end
+	if gp then return end
 
 	if input.KeyCode == Enum.KeyCode.RightShift then
 		gui.Enabled = not gui.Enabled

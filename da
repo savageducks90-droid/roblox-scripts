@@ -1,6 +1,23 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
+local function getScript(url)
+    local success, result = pcall(function()
+        if request then
+            return request({Url = url, Method = "GET"}).Body
+        else
+            return game:HttpGet(url)
+        end
+    end)
+
+    if success then
+        loadstring(result)()
+    else
+        warn("Failed to load script:", url)
+        warn(result)
+    end
+end
+
 local gui = Instance.new("ScreenGui")
 gui.Name = "MyHub"
 gui.ResetOnSpawn = false
@@ -46,11 +63,11 @@ end
 -------------------------------------------------
 
 createButton("ESP Script",function()
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp.lua"))()
+	getScript("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp.lua")
 end)
 
 createButton("Spectate Script",function()
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/spectate.lua"))()
+	getScript("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/spectate.lua")
 end)
 
 createButton("Close Hub",function()

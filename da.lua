@@ -1,3 +1,4 @@
+```lua
 repeat task.wait() until game:IsLoaded()
 repeat task.wait() until game.Players.LocalPlayer
 repeat task.wait() until game.Players.LocalPlayer:FindFirstChild("PlayerGui")
@@ -9,7 +10,7 @@ local UIS = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- prevent duplicate hub
+-- remove duplicate hub
 if playerGui:FindFirstChild("SavageHub") then
 	playerGui.SavageHub:Destroy()
 end
@@ -24,21 +25,21 @@ local function run(url)
 	end)
 
 	if not success then
-		warn("HTTP failed:",url)
+		warn("HTTP Failed:",url)
 		return
 	end
 
 	local func,err = loadstring(code)
 
 	if not func then
-		warn("Loadstring error:",err)
+		warn("Loadstring Error:",err)
 		return
 	end
 
 	local ran,runtimeErr = pcall(func)
 
 	if not ran then
-		warn("Script error:",runtimeErr)
+		warn("Script Error:",runtimeErr)
 	end
 
 end
@@ -51,8 +52,8 @@ gui.Enabled = true
 gui.Parent = playerGui
 
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0,270,0,300)
-main.Position = UDim2.new(0,200,0,200)
+main.Size = UDim2.new(0,270,0,320)
+main.Position = UDim2.new(0.5,-135,0.5,-160)
 main.BackgroundColor3 = Color3.fromRGB(15,15,15)
 main.BorderSizePixel = 0
 main.Active = true
@@ -75,7 +76,7 @@ title.Font = Enum.Font.GothamBold
 title.TextSize = 16
 title.Parent = top
 
--- minimize button
+-- minimize
 local minimize = Instance.new("TextButton")
 minimize.Size = UDim2.new(0,30,1,0)
 minimize.Position = UDim2.new(1,-30,0,0)
@@ -90,7 +91,7 @@ local minimized = false
 minimize.MouseButton1Click:Connect(function()
 
 	if minimized then
-		main.Size = UDim2.new(0,270,0,300)
+		main.Size = UDim2.new(0,270,0,320)
 	else
 		main.Size = UDim2.new(0,270,0,34)
 	end
@@ -219,3 +220,4 @@ UIS.InputBegan:Connect(function(input,gp)
 end)
 
 print("Savage Hub Loaded")
+```

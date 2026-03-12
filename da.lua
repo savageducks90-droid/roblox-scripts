@@ -19,7 +19,7 @@ if old then
 end
 
 ------------------------------------------------
--- SAFE LOADER
+-- SAFE SCRIPT LOADER
 ------------------------------------------------
 
 local function run(url)
@@ -40,14 +40,11 @@ local function run(url)
 		return
 	end
 
-	local func,err = loadstring(code)
+	local func = loadstring(code)
 
-	if not func then
-		warn("LOADSTRING ERROR:",err)
-		return
+	if func then
+		pcall(func)
 	end
-
-	pcall(func)
 
 end
 
@@ -61,8 +58,8 @@ gui.ResetOnSpawn = false
 gui.Parent = playerGui
 
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0,280,0,420)
-main.Position = UDim2.new(0.5,-140,0.5,-210)
+main.Size = UDim2.new(0,280,0,450)
+main.Position = UDim2.new(0.5,-140,0.5,-225)
 main.BackgroundColor3 = Color3.fromRGB(20,20,20)
 main.BorderSizePixel = 0
 main.Active = true
@@ -95,7 +92,7 @@ layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 layout.Parent = container
 
 ------------------------------------------------
--- BUTTON FUNCTION
+-- BUTTON CREATOR
 ------------------------------------------------
 
 local function button(text,callback)
@@ -114,13 +111,24 @@ local function button(text,callback)
 end
 
 ------------------------------------------------
+-- VISUAL SECTION
+------------------------------------------------
+
+local visualTitle = Instance.new("TextLabel")
+visualTitle.Size = UDim2.new(0,240,0,20)
+visualTitle.BackgroundTransparency = 1
+visualTitle.Text = "Visuals"
+visualTitle.TextColor3 = Color3.fromRGB(255,80,80)
+visualTitle.Font = Enum.Font.GothamBold
+visualTitle.TextSize = 16
+visualTitle.Parent = container
+
+------------------------------------------------
 -- ESP
 ------------------------------------------------
 
 button("ESP",function()
-
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp.lua")
-
 end)
 
 ------------------------------------------------
@@ -128,19 +136,7 @@ end)
 ------------------------------------------------
 
 button("Spectate",function()
-
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/spectate.lua")
-
-end)
-
-------------------------------------------------
--- REWARD REAPER
-------------------------------------------------
-
-button("Reward Reaper",function()
-
-	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/reward_reaper.lua")
-
 end)
 
 ------------------------------------------------
@@ -148,7 +144,7 @@ end)
 ------------------------------------------------
 
 local chakraLabel = Instance.new("TextLabel")
-chakraLabel.Size = UDim2.new(0,240,0,70)
+chakraLabel.Size = UDim2.new(0,240,0,60)
 chakraLabel.BackgroundTransparency = 1
 chakraLabel.TextColor3 = Color3.new(1,1,1)
 chakraLabel.Font = Enum.Font.SourceSansBold
@@ -187,6 +183,27 @@ task.spawn(function()
 end)
 
 ------------------------------------------------
+-- UTILITY SECTION
+------------------------------------------------
+
+local utilTitle = Instance.new("TextLabel")
+utilTitle.Size = UDim2.new(0,240,0,20)
+utilTitle.BackgroundTransparency = 1
+utilTitle.Text = "Utility"
+utilTitle.TextColor3 = Color3.fromRGB(255,80,80)
+utilTitle.Font = Enum.Font.GothamBold
+utilTitle.TextSize = 16
+utilTitle.Parent = container
+
+------------------------------------------------
+-- REWARD REAPER
+------------------------------------------------
+
+button("Reward Reaper",function()
+	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/reward_reaper.lua")
+end)
+
+------------------------------------------------
 -- FRUIT RADAR
 ------------------------------------------------
 
@@ -198,24 +215,44 @@ local fruits = {
 
 button("Fruit Radar",function()
 
+	local char = player.Character
+	if not char then return end
+	local root = char:FindFirstChild("HumanoidRootPart")
+
 	for _,v in pairs(workspace:GetDescendants()) do
 
 		if table.find(fruits,v.Name) then
 
-			if v:IsA("BasePart") then
+			local part = v:IsA("BasePart") and v or v:FindFirstChildWhichIsA("BasePart")
 
-				local billboard = Instance.new("BillboardGui")
-				billboard.Size = UDim2.new(0,100,0,40)
-				billboard.AlwaysOnTop = true
-				billboard.Parent = v
+			if part then
+
+				local gui = Instance.new("BillboardGui")
+				gui.Size = UDim2.new(0,120,0,40)
+				gui.AlwaysOnTop = true
+				gui.Parent = part
 
 				local text = Instance.new("TextLabel")
 				text.Size = UDim2.new(1,0,1,0)
 				text.BackgroundTransparency = 1
-				text.Text = v.Name
 				text.TextColor3 = Color3.new(1,0,0)
 				text.TextScaled = true
-				text.Parent = billboard
+				text.Parent = gui
+
+				task.spawn(function()
+
+					while part.Parent do
+
+						if root then
+							local dist = math.floor((root.Position - part.Position).Magnitude)
+							text.Text = v.Name.." ["..dist.."m]"
+						end
+
+						task.wait(.5)
+
+					end
+
+				end)
 
 			end
 

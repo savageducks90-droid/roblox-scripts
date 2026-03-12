@@ -1,67 +1,48 @@
--- SAVAGE HUB
+-- SAVAGE HUB LOADER
 
 repeat task.wait() until game:IsLoaded()
 
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local UIS = game:GetService("UserInputService")
+local player = game.Players.LocalPlayer
 
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-
-------------------------------------------------
--- REMOVE OLD HUB
-------------------------------------------------
-
-local old = playerGui:FindFirstChild("SavageHub")
-if old then
-	old:Destroy()
-end
-
-------------------------------------------------
--- SAFE LOADER
-------------------------------------------------
-
-local function run(url)
+local function load(url)
 
 	url = url.."?"..math.random(1000,9999)
 
-	local success,code = pcall(function()
+	local s,code = pcall(function()
 		return game:HttpGet(url)
 	end)
 
-	if not success then
-		warn("HTTP FAILED:",url)
+	if not s then
+		warn("failed:",url)
 		return
 	end
 
 	if string.find(code,"<!DOCTYPE") then
-		warn("SCRIPT NOT FOUND:",url)
+		warn("not found:",url)
 		return
 	end
 
-	local func = loadstring(code)
+	local f = loadstring(code)
 
-	if func then
-		pcall(func)
+	if f then
+		pcall(f)
 	end
 
 end
 
 ------------------------------------------------
--- GUI
+-- HUB GUI
 ------------------------------------------------
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "SavageHub"
 gui.ResetOnSpawn = false
-gui.Parent = playerGui
+gui.Parent = player:WaitForChild("PlayerGui")
 
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0,280,0,460)
-main.Position = UDim2.new(0.5,-140,0.5,-230)
+main.Size = UDim2.new(0,280,0,320)
+main.Position = UDim2.new(.5,-140,.5,-160)
 main.BackgroundColor3 = Color3.fromRGB(20,20,20)
-main.BorderSizePixel = 0
 main.Active = true
 main.Draggable = true
 main.Parent = gui
@@ -90,24 +71,24 @@ title.Parent = top
 
 local minimized = false
 
-local minimize = Instance.new("TextButton")
-minimize.Size = UDim2.new(0,36,1,0)
-minimize.Position = UDim2.new(1,-36,0,0)
-minimize.Text = "-"
-minimize.TextColor3 = Color3.new(1,1,1)
-minimize.BackgroundTransparency = 1
-minimize.Font = Enum.Font.GothamBold
-minimize.TextSize = 22
-minimize.Parent = top
+local mini = Instance.new("TextButton")
+mini.Size = UDim2.new(0,36,1,0)
+mini.Position = UDim2.new(1,-36,0,0)
+mini.Text = "-"
+mini.TextColor3 = Color3.new(1,1,1)
+mini.BackgroundTransparency = 1
+mini.Font = Enum.Font.GothamBold
+mini.TextSize = 22
+mini.Parent = top
 
-minimize.MouseButton1Click:Connect(function()
+mini.MouseButton1Click:Connect(function()
 
 	if minimized then
-		main.Size = UDim2.new(0,280,0,460)
-		minimize.Text = "-"
+		main.Size = UDim2.new(0,280,0,320)
+		mini.Text = "-"
 	else
 		main.Size = UDim2.new(0,280,0,36)
-		minimize.Text = "+"
+		mini.Text = "+"
 	end
 
 	minimized = not minimized
@@ -115,7 +96,7 @@ minimize.MouseButton1Click:Connect(function()
 end)
 
 ------------------------------------------------
--- CONTAINER
+-- BUTTON CONTAINER
 ------------------------------------------------
 
 local container = Instance.new("Frame")
@@ -128,10 +109,6 @@ local layout = Instance.new("UIListLayout")
 layout.Padding = UDim.new(0,6)
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 layout.Parent = container
-
-------------------------------------------------
--- BUTTON CREATOR
-------------------------------------------------
 
 local function button(text,callback)
 
@@ -149,95 +126,56 @@ local function button(text,callback)
 end
 
 ------------------------------------------------
--- VISUAL SECTION
+-- BUTTONS
 ------------------------------------------------
-
-local visualTitle = Instance.new("TextLabel")
-visualTitle.Size = UDim2.new(0,240,0,20)
-visualTitle.BackgroundTransparency = 1
-visualTitle.Text = "Visuals"
-visualTitle.TextColor3 = Color3.fromRGB(255,80,80)
-visualTitle.Font = Enum.Font.GothamBold
-visualTitle.TextSize = 16
-visualTitle.Parent = container
 
 button("ESP",function()
-	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp.lua")
+	load("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp.lua")
 end)
 
-button("Spectate",function()
-	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/spectate.lua")
+button("Spectate Leaderboard",function()
+	load("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/spectate.lua")
 end)
-
-------------------------------------------------
--- UTILITY
-------------------------------------------------
-
-local utilTitle = Instance.new("TextLabel")
-utilTitle.Size = UDim2.new(0,240,0,20)
-utilTitle.BackgroundTransparency = 1
-utilTitle.Text = "Utility"
-utilTitle.TextColor3 = Color3.fromRGB(255,80,80)
-utilTitle.Font = Enum.Font.GothamBold
-utilTitle.TextSize = 16
-utilTitle.Parent = container
 
 button("Reward Reaper",function()
-	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/reward_reaper.lua")
+	load("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/reward_reaper.lua")
 end)
 
 ------------------------------------------------
--- FRUIT RADAR
+-- TELEPORT ROUTE
 ------------------------------------------------
 
-local fruits = {
-	"Life Up Fruit",
-	"Chakra Fruit",
-	"Mango"
-}
+button("Fruit Route Teleport",function()
 
-button("Fruit Radar",function()
+	local char = player.Character
+	if not char then return end
 
-	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+	local root = char:FindFirstChild("HumanoidRootPart")
+	if not root then return end
 
-	for _,v in pairs(workspace:GetDescendants()) do
+	local route = {
 
-		if table.find(fruits,v.Name) then
+	Vector3.new(-132.2,178.4,-1347.2),
+	Vector3.new(-58.7,149.9,-1528.3),
+	Vector3.new(459.0,149.0,-1754.2),
+	Vector3.new(431.3,148.9,-1514.1),
+	Vector3.new(407.4,145.6,-2067.3),
+	Vector3.new(65.1,353.2,-1888.3),
+	Vector3.new(-304.2,146.0,-1798.8),
+	Vector3.new(-583.2,146.2,-1367.9),
+	Vector3.new(-652.0,276.1,-1574.2),
+	Vector3.new(-665.8,150.2,-1991.8),
+	Vector3.new(-488.6,440.3,-2133.7),
+	Vector3.new(-892,434.0,-2132.4),
+	Vector3.new(-531.2,249.0,-954.0),
+	Vector3.new(55.9,217.1,-885.8)
 
-			local part = v:IsA("BasePart") and v or v:FindFirstChildWhichIsA("BasePart")
+	}
 
-			if part then
+	for _,pos in ipairs(route) do
 
-				local gui = Instance.new("BillboardGui")
-				gui.Size = UDim2.new(0,120,0,40)
-				gui.AlwaysOnTop = true
-				gui.Parent = part
-
-				local text = Instance.new("TextLabel")
-				text.Size = UDim2.new(1,0,1,0)
-				text.BackgroundTransparency = 1
-				text.TextColor3 = Color3.new(1,0,0)
-				text.TextScaled = true
-				text.Parent = gui
-
-				task.spawn(function()
-
-					while part.Parent do
-
-						if root then
-							local dist = math.floor((root.Position - part.Position).Magnitude)
-							text.Text = v.Name.." ["..dist.."m]"
-						end
-
-						task.wait(.5)
-
-					end
-
-				end)
-
-			end
-
-		end
+		root.CFrame = CFrame.new(pos)
+		task.wait(1)
 
 	end
 
@@ -247,26 +185,28 @@ end)
 -- CHAKRA SENSOR COUNTER
 ------------------------------------------------
 
-local chakraGui = Instance.new("ScreenGui")
-chakraGui.Parent = playerGui
-chakraGui.Name = "ChakraCounter"
+local rs = game:GetService("ReplicatedStorage")
 
-local chakraLabel = Instance.new("TextLabel")
-chakraLabel.Size = UDim2.new(0,200,0,30)
-chakraLabel.Position = UDim2.new(0.5,-100,0,0)
-chakraLabel.BackgroundTransparency = 1
-chakraLabel.TextColor3 = Color3.new(1,1,1)
-chakraLabel.Font = Enum.Font.GothamBold
-chakraLabel.TextScaled = true
-chakraLabel.Text = "Chakra Sensors: 0"
-chakraLabel.Parent = chakraGui
+local chakraGui = Instance.new("ScreenGui")
+chakraGui.Parent = player.PlayerGui
+
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(0,200,0,30)
+label.Position = UDim2.new(.5,-100,0,0)
+label.BackgroundTransparency = 1
+label.TextColor3 = Color3.new(1,1,1)
+label.Font = Enum.Font.GothamBold
+label.TextScaled = true
+label.Text = "Chakra Sensors: 0"
+label.Parent = chakraGui
 
 task.spawn(function()
 
 	while true do
 
 		local count = 0
-		local cooldowns = ReplicatedStorage:FindFirstChild("Cooldowns")
+
+		local cooldowns = rs:FindFirstChild("Cooldowns")
 
 		if cooldowns then
 
@@ -278,26 +218,10 @@ task.spawn(function()
 
 		end
 
-		chakraLabel.Text = "Chakra Sensors: "..count
+		label.Text = "Chakra Sensors: "..count
 
 		task.wait(2)
 
 	end
 
 end)
-
-------------------------------------------------
--- HUB TOGGLE
-------------------------------------------------
-
-UIS.InputBegan:Connect(function(input,gp)
-
-	if gp then return end
-
-	if input.KeyCode == Enum.KeyCode.RightShift then
-		gui.Enabled = not gui.Enabled
-	end
-
-end)
-
-print("Savage Hub Loaded")

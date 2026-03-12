@@ -11,12 +11,12 @@ repeat task.wait() until player:FindFirstChild("PlayerGui")
 
 local playerGui = player.PlayerGui
 
--- remove duplicates
+-- remove old hub
 if playerGui:FindFirstChild("SavageHub") then
 	playerGui.SavageHub:Destroy()
 end
 
--- script loader
+-- safe loader
 local function run(url)
 
 	local success,code = pcall(function()
@@ -24,14 +24,14 @@ local function run(url)
 	end)
 
 	if not success then
-		warn("Failed loading:",url)
+		warn("HTTP FAILED:",url)
 		return
 	end
 
 	local func,err = loadstring(code)
 
 	if not func then
-		warn("Loadstring error:",err)
+		warn("LOADSTRING ERROR:",err)
 		return
 	end
 
@@ -43,14 +43,12 @@ end
 local gui = Instance.new("ScreenGui")
 gui.Name = "SavageHub"
 gui.ResetOnSpawn = false
-gui.Enabled = true
 gui.Parent = playerGui
 
 local main = Instance.new("Frame")
 main.Size = UDim2.new(0,280,0,340)
 main.Position = UDim2.new(0.4,0,0.3,0)
 main.BackgroundColor3 = Color3.fromRGB(20,20,20)
-main.BorderSizePixel = 0
 main.Active = true
 main.Parent = gui
 
@@ -130,8 +128,92 @@ local padding = Instance.new("UIPadding")
 padding.PaddingTop = UDim.new(0,8)
 padding.Parent = container
 
--- button creator
+-- button maker
 local function button(text,callback)
 
-	local b =
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(0,240,0,32)
+	b.BackgroundColor3 = Color3.fromRGB(45,0,0)
+	b.TextColor3 = Color3.new(1,1,1)
+	b.Font = Enum.Font.GothamBold
+	b.TextSize = 14
+	b.Text = text
+	b.Parent = container
+
+	b.MouseEnter:Connect(function()
+		b.BackgroundColor3 = Color3.fromRGB(80,0,0)
+	end)
+
+	b.MouseLeave:Connect(function()
+		b.BackgroundColor3 = Color3.fromRGB(45,0,0)
+	end)
+
+	b.MouseButton1Click:Connect(callback)
+
+end
+
+-- buttons
+button("ESP",function()
+	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp_fixed.lua")
+end)
+
+button("Spectate",function()
+	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/spectate.lua")
+end)
+
+button("Reward Reaper",function()
+	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/reward_reaper.lua")
+end)
+
+-- chakra detector
+local chakraLabel = Instance.new("TextLabel")
+chakraLabel.Size = UDim2.new(0,240,0,60)
+chakraLabel.BackgroundTransparency = 1
+chakraLabel.TextColor3 = Color3.new(1,1,1)
+chakraLabel.Font = Enum.Font.SourceSans
+chakraLabel.TextWrapped = true
+chakraLabel.TextYAlignment = Enum.TextYAlignment.Top
+chakraLabel.Text = "Chakra Users: None"
+chakraLabel.Parent = container
+
+local function update()
+
+	local cooldowns = ReplicatedStorage:FindFirstChild("Cooldowns")
+	if not cooldowns then return end
+
+	local list = {}
+
+	for _,folder in ipairs(cooldowns:GetChildren()) do
+		if folder:FindFirstChild("Chakra Sense") then
+			table.insert(list,folder.Name)
+		end
+	end
+
+	if #list == 0 then
+		chakraLabel.Text = "Chakra Users: None"
+	else
+		chakraLabel.Text = "Chakra Users:\n"..table.concat(list,"\n")
+	end
+
+end
+
+task.spawn(function()
+	while true do
+		update()
+		task.wait(2)
+	end
+end)
+
+-- toggle hub
+UIS.InputBegan:Connect(function(input,gp)
+
+	if gp then return end
+
+	if input.KeyCode == Enum.KeyCode.RightShift then
+		gui.Enabled = not gui.Enabled
+	end
+
+end)
+
+print("Savage Hub Loaded")
 ```

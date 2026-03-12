@@ -20,10 +20,13 @@ if old then
 end
 
 ------------------------------------------------
--- SAFE LOADER
+-- SAFE SCRIPT LOADER
 ------------------------------------------------
 
 local function run(url)
+
+	-- cache bypass
+	url = url.."?"..math.random(100000,999999)
 
 	local success,code = pcall(function()
 		return game:HttpGet(url)
@@ -112,7 +115,7 @@ end
 ------------------------------------------------
 
 button("ESP",function()
-	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp.lua")
+	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp_fixed.lua")
 end)
 
 button("Spectate",function()
@@ -185,14 +188,14 @@ button("Fruit Radar",function()
 			if v:IsA("BasePart") then
 
 				local billboard = Instance.new("BillboardGui")
-				billboard.Size = UDim2.new(0,100,0,40)
+				billboard.Size = UDim2.new(0,120,0,40)
 				billboard.AlwaysOnTop = true
 				billboard.Parent = v
 
 				local text = Instance.new("TextLabel")
 				text.Size = UDim2.new(1,0,1,0)
 				text.BackgroundTransparency = 1
-				text.Text = v.Name
+				text.Text = "🍎 "..v.Name
 				text.TextColor3 = Color3.new(1,0,0)
 				text.TextScaled = true
 				text.Parent = billboard

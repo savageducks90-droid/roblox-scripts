@@ -46,9 +46,10 @@ gui.ResetOnSpawn = false
 gui.Parent = playerGui
 
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0,280,0,340)
-main.Position = UDim2.new(0.4,0,0.3,0)
+main.Size = UDim2.new(0,280,0,320)
+main.Position = UDim2.new(0.5,-140,0.5,-160)
 main.BackgroundColor3 = Color3.fromRGB(20,20,20)
+main.BorderSizePixel = 0
 main.Active = true
 main.Parent = gui
 
@@ -67,13 +68,12 @@ title.Font = Enum.Font.GothamBold
 title.TextSize = 18
 title.Parent = top
 
--- close button
 local close = Instance.new("TextButton")
 close.Size = UDim2.new(0,30,1,0)
 close.Position = UDim2.new(1,-30,0,0)
 close.Text = "X"
-close.Font = Enum.Font.GothamBold
 close.TextColor3 = Color3.new(1,1,1)
+close.Font = Enum.Font.GothamBold
 close.BackgroundColor3 = Color3.fromRGB(120,0,0)
 close.Parent = top
 
@@ -81,35 +81,44 @@ close.MouseButton1Click:Connect(function()
 	gui.Enabled = false
 end)
 
--- drag system
+-- drag
 local dragging = false
 local dragStart
 local startPos
 
 main.InputBegan:Connect(function(input)
+
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
 		dragging = true
 		dragStart = input.Position
 		startPos = main.Position
 	end
+
 end)
 
 main.InputEnded:Connect(function(input)
+
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
 		dragging = false
 	end
+
 end)
 
 UIS.InputChanged:Connect(function(input)
+
 	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+
 		local delta = input.Position - dragStart
+
 		main.Position = UDim2.new(
 			startPos.X.Scale,
 			startPos.X.Offset + delta.X,
 			startPos.Y.Scale,
 			startPos.Y.Offset + delta.Y
 		)
+
 	end
+
 end)
 
 -- container
@@ -124,45 +133,33 @@ layout.Padding = UDim.new(0,6)
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 layout.Parent = container
 
-local padding = Instance.new("UIPadding")
-padding.PaddingTop = UDim.new(0,8)
-padding.Parent = container
-
--- button maker
+-- button creator
 local function button(text,callback)
 
 	local b = Instance.new("TextButton")
 	b.Size = UDim2.new(0,240,0,32)
-	b.BackgroundColor3 = Color3.fromRGB(45,0,0)
+	b.BackgroundColor3 = Color3.fromRGB(40,0,0)
 	b.TextColor3 = Color3.new(1,1,1)
 	b.Font = Enum.Font.GothamBold
 	b.TextSize = 14
 	b.Text = text
 	b.Parent = container
 
-	b.MouseEnter:Connect(function()
-		b.BackgroundColor3 = Color3.fromRGB(80,0,0)
-	end)
-
-	b.MouseLeave:Connect(function()
-		b.BackgroundColor3 = Color3.fromRGB(45,0,0)
-	end)
-
 	b.MouseButton1Click:Connect(callback)
 
 end
 
 -- buttons
+button("Reward Reaper",function()
+	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/reward_reaper.lua")
+end)
+
 button("ESP",function()
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp_fixed.lua")
 end)
 
 button("Spectate",function()
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/spectate.lua")
-end)
-
-button("Reward Reaper",function()
-	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/reward_reaper.lua")
 end)
 
 -- chakra detector
@@ -172,7 +169,6 @@ chakraLabel.BackgroundTransparency = 1
 chakraLabel.TextColor3 = Color3.new(1,1,1)
 chakraLabel.Font = Enum.Font.SourceSans
 chakraLabel.TextWrapped = true
-chakraLabel.TextYAlignment = Enum.TextYAlignment.Top
 chakraLabel.Text = "Chakra Users: None"
 chakraLabel.Parent = container
 
@@ -184,9 +180,11 @@ local function update()
 	local list = {}
 
 	for _,folder in ipairs(cooldowns:GetChildren()) do
+
 		if folder:FindFirstChild("Chakra Sense") then
 			table.insert(list,folder.Name)
 		end
+
 	end
 
 	if #list == 0 then
@@ -198,10 +196,12 @@ local function update()
 end
 
 task.spawn(function()
+
 	while true do
 		update()
 		task.wait(2)
 	end
+
 end)
 
 -- toggle hub

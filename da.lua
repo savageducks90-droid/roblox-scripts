@@ -2,47 +2,52 @@
 
 repeat task.wait() until game:IsLoaded()
 
-local player = game.Players.LocalPlayer
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UIS = game:GetService("UserInputService")
 
-local function load(url)
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+------------------------------------------------
+-- SAFE SCRIPT LOADER
+------------------------------------------------
+
+local function run(url)
 
 	url = url.."?"..math.random(1000,9999)
 
-	local s,code = pcall(function()
+	local success,code = pcall(function()
 		return game:HttpGet(url)
 	end)
 
-	if not s then
-		warn("failed:",url)
+	if not success then
+		warn("Failed loading:",url)
 		return
 	end
 
-	if string.find(code,"<!DOCTYPE") then
-		warn("not found:",url)
-		return
-	end
+	local func = loadstring(code)
 
-	local f = loadstring(code)
-
-	if f then
-		pcall(f)
+	if func then
+		pcall(func)
 	end
 
 end
 
 ------------------------------------------------
--- HUB GUI
+-- GUI
 ------------------------------------------------
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "SavageHub"
 gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
+gui.Parent = playerGui
 
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0,280,0,320)
-main.Position = UDim2.new(.5,-140,.5,-160)
+main.Size = UDim2.new(0,280,0,340)
+main.Position = UDim2.new(.5,-140,.5,-170)
 main.BackgroundColor3 = Color3.fromRGB(20,20,20)
+main.BorderSizePixel = 0
 main.Active = true
 main.Draggable = true
 main.Parent = gui
@@ -78,13 +83,13 @@ mini.Text = "-"
 mini.TextColor3 = Color3.new(1,1,1)
 mini.BackgroundTransparency = 1
 mini.Font = Enum.Font.GothamBold
-mini.TextSize = 22
+mini.TextSize = 20
 mini.Parent = top
 
 mini.MouseButton1Click:Connect(function()
 
 	if minimized then
-		main.Size = UDim2.new(0,280,0,320)
+		main.Size = UDim2.new(0,280,0,340)
 		mini.Text = "-"
 	else
 		main.Size = UDim2.new(0,280,0,36)
@@ -126,19 +131,19 @@ local function button(text,callback)
 end
 
 ------------------------------------------------
--- BUTTONS
+-- SCRIPT BUTTONS
 ------------------------------------------------
 
 button("ESP",function()
-	load("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp.lua")
+	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp.lua")
 end)
 
-button("Spectate Leaderboard",function()
-	load("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/spectate.lua")
+button("Spectate",function()
+	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/spectate.lua")
 end)
 
 button("Reward Reaper",function()
-	load("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/reward_reaper.lua")
+	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/reward_reaper.lua")
 end)
 
 ------------------------------------------------
@@ -173,10 +178,8 @@ button("Fruit Route Teleport",function()
 	}
 
 	for _,pos in ipairs(route) do
-
 		root.CFrame = CFrame.new(pos)
 		task.wait(1)
-
 	end
 
 end)
@@ -185,10 +188,8 @@ end)
 -- CHAKRA SENSOR COUNTER
 ------------------------------------------------
 
-local rs = game:GetService("ReplicatedStorage")
-
 local chakraGui = Instance.new("ScreenGui")
-chakraGui.Parent = player.PlayerGui
+chakraGui.Parent = playerGui
 
 local label = Instance.new("TextLabel")
 label.Size = UDim2.new(0,200,0,30)
@@ -205,23 +206,34 @@ task.spawn(function()
 	while true do
 
 		local count = 0
-
-		local cooldowns = rs:FindFirstChild("Cooldowns")
+		local cooldowns = ReplicatedStorage:FindFirstChild("Cooldowns")
 
 		if cooldowns then
-
 			for _,v in pairs(cooldowns:GetChildren()) do
 				if v:FindFirstChild("Chakra Sense") then
 					count += 1
 				end
 			end
-
 		end
 
 		label.Text = "Chakra Sensors: "..count
 
 		task.wait(2)
 
+	end
+
+end)
+
+------------------------------------------------
+-- HUB TOGGLE
+------------------------------------------------
+
+UIS.InputBegan:Connect(function(input,gp)
+
+	if gp then return end
+
+	if input.KeyCode == Enum.KeyCode.RightShift then
+		gui.Enabled = not gui.Enabled
 	end
 
 end)

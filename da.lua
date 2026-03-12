@@ -19,7 +19,7 @@ if old then
 end
 
 ------------------------------------------------
--- SAFE SCRIPT LOADER
+-- SAFE LOADER
 ------------------------------------------------
 
 local function run(url)
@@ -58,13 +58,17 @@ gui.ResetOnSpawn = false
 gui.Parent = playerGui
 
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0,280,0,450)
-main.Position = UDim2.new(0.5,-140,0.5,-225)
+main.Size = UDim2.new(0,280,0,460)
+main.Position = UDim2.new(0.5,-140,0.5,-230)
 main.BackgroundColor3 = Color3.fromRGB(20,20,20)
 main.BorderSizePixel = 0
 main.Active = true
 main.Draggable = true
 main.Parent = gui
+
+------------------------------------------------
+-- TOP BAR
+------------------------------------------------
 
 local top = Instance.new("Frame")
 top.Size = UDim2.new(1,0,0,36)
@@ -72,13 +76,47 @@ top.BackgroundColor3 = Color3.fromRGB(170,0,0)
 top.Parent = main
 
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,0,1,0)
+title.Size = UDim2.new(1,-40,1,0)
 title.BackgroundTransparency = 1
 title.Text = "Savage Hub"
 title.TextColor3 = Color3.new(1,1,1)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 18
 title.Parent = top
+
+------------------------------------------------
+-- MINIMIZE BUTTON
+------------------------------------------------
+
+local minimized = false
+
+local minimize = Instance.new("TextButton")
+minimize.Size = UDim2.new(0,36,1,0)
+minimize.Position = UDim2.new(1,-36,0,0)
+minimize.Text = "-"
+minimize.TextColor3 = Color3.new(1,1,1)
+minimize.BackgroundTransparency = 1
+minimize.Font = Enum.Font.GothamBold
+minimize.TextSize = 22
+minimize.Parent = top
+
+minimize.MouseButton1Click:Connect(function()
+
+	if minimized then
+		main.Size = UDim2.new(0,280,0,460)
+		minimize.Text = "-"
+	else
+		main.Size = UDim2.new(0,280,0,36)
+		minimize.Text = "+"
+	end
+
+	minimized = not minimized
+
+end)
+
+------------------------------------------------
+-- CONTAINER
+------------------------------------------------
 
 local container = Instance.new("Frame")
 container.Size = UDim2.new(1,0,1,-36)
@@ -123,67 +161,16 @@ visualTitle.Font = Enum.Font.GothamBold
 visualTitle.TextSize = 16
 visualTitle.Parent = container
 
-------------------------------------------------
--- ESP
-------------------------------------------------
-
 button("ESP",function()
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp.lua")
 end)
-
-------------------------------------------------
--- SPECTATE
-------------------------------------------------
 
 button("Spectate",function()
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/spectate.lua")
 end)
 
 ------------------------------------------------
--- CHAKRA SENSE DETECTOR
-------------------------------------------------
-
-local chakraLabel = Instance.new("TextLabel")
-chakraLabel.Size = UDim2.new(0,240,0,60)
-chakraLabel.BackgroundTransparency = 1
-chakraLabel.TextColor3 = Color3.new(1,1,1)
-chakraLabel.Font = Enum.Font.SourceSansBold
-chakraLabel.TextWrapped = true
-chakraLabel.Text = "Chakra Users: None"
-chakraLabel.Parent = container
-
-local function updateChakra()
-
-	local cooldowns = ReplicatedStorage:FindFirstChild("Cooldowns")
-	if not cooldowns then return end
-
-	local list = {}
-
-	for _,folder in ipairs(cooldowns:GetChildren()) do
-		if folder:FindFirstChild("Chakra Sense") then
-			table.insert(list,folder.Name)
-		end
-	end
-
-	if #list == 0 then
-		chakraLabel.Text = "Chakra Users: None"
-	else
-		chakraLabel.Text = "Chakra Users:\n"..table.concat(list,"\n")
-	end
-
-end
-
-task.spawn(function()
-
-	while true do
-		updateChakra()
-		task.wait(2)
-	end
-
-end)
-
-------------------------------------------------
--- UTILITY SECTION
+-- UTILITY
 ------------------------------------------------
 
 local utilTitle = Instance.new("TextLabel")
@@ -194,10 +181,6 @@ utilTitle.TextColor3 = Color3.fromRGB(255,80,80)
 utilTitle.Font = Enum.Font.GothamBold
 utilTitle.TextSize = 16
 utilTitle.Parent = container
-
-------------------------------------------------
--- REWARD REAPER
-------------------------------------------------
 
 button("Reward Reaper",function()
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/reward_reaper.lua")
@@ -215,9 +198,7 @@ local fruits = {
 
 button("Fruit Radar",function()
 
-	local char = player.Character
-	if not char then return end
-	local root = char:FindFirstChild("HumanoidRootPart")
+	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 
 	for _,v in pairs(workspace:GetDescendants()) do
 
@@ -263,40 +244,43 @@ button("Fruit Radar",function()
 end)
 
 ------------------------------------------------
--- FRUIT ROUTE SCAN
+-- CHAKRA SENSOR COUNTER
 ------------------------------------------------
 
-local route = {
+local chakraGui = Instance.new("ScreenGui")
+chakraGui.Parent = playerGui
+chakraGui.Name = "ChakraCounter"
 
-Vector3.new(-132.2,178.4,-1347.2),
-Vector3.new(-58.7,149.9,-1528.3),
-Vector3.new(459.0,149.0,-1754.2),
-Vector3.new(431.3,148.9,-1514.1),
-Vector3.new(407.4,145.6,-2067.3),
-Vector3.new(65.1,353.2,-1888.3),
-Vector3.new(-304.2,146.0,-1798.8),
-Vector3.new(-583.2,146.2,-1367.9),
-Vector3.new(-652.0,276.1,-1574.2),
-Vector3.new(-665.8,150.2,-1991.8),
-Vector3.new(-488.6,440.3,-2133.7),
-Vector3.new(-892,434.0,-2132.4),
-Vector3.new(-531.2,249.0,-954.0),
-Vector3.new(55.9,217.1,-885.8)
+local chakraLabel = Instance.new("TextLabel")
+chakraLabel.Size = UDim2.new(0,200,0,30)
+chakraLabel.Position = UDim2.new(0.5,-100,0,0)
+chakraLabel.BackgroundTransparency = 1
+chakraLabel.TextColor3 = Color3.new(1,1,1)
+chakraLabel.Font = Enum.Font.GothamBold
+chakraLabel.TextScaled = true
+chakraLabel.Text = "Chakra Sensors: 0"
+chakraLabel.Parent = chakraGui
 
-}
+task.spawn(function()
 
-button("Fruit Route Scan",function()
+	while true do
 
-	local char = player.Character
-	if not char then return end
+		local count = 0
+		local cooldowns = ReplicatedStorage:FindFirstChild("Cooldowns")
 
-	local root = char:FindFirstChild("HumanoidRootPart")
-	if not root then return end
+		if cooldowns then
 
-	for _,pos in ipairs(route) do
+			for _,v in pairs(cooldowns:GetChildren()) do
+				if v:FindFirstChild("Chakra Sense") then
+					count += 1
+				end
+			end
 
-		root.CFrame = CFrame.new(pos)
-		task.wait(1)
+		end
+
+		chakraLabel.Text = "Chakra Sensors: "..count
+
+		task.wait(2)
 
 	end
 

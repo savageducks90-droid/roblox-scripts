@@ -1,26 +1,32 @@
 ```lua
+-- SAVAGE HUB MAIN LOADER
+
 repeat task.wait() until game:IsLoaded()
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UIS = game:GetService("UserInputService")
 
--- wait for LocalPlayer
-local player = Players.LocalPlayer
-while not player do
-	task.wait()
+-- wait for player
+local player
+repeat
 	player = Players.LocalPlayer
-end
+	task.wait()
+until player
 
 -- wait for PlayerGui
-local playerGui = player:WaitForChild("PlayerGui")
+local playerGui
+repeat
+	playerGui = player:FindFirstChild("PlayerGui")
+	task.wait()
+until playerGui
 
 -- remove old hub
 if playerGui:FindFirstChild("SavageHub") then
 	playerGui.SavageHub:Destroy()
 end
 
--- safe loader
+-- safe http loader
 local function run(url)
 
 	local success,code = pcall(function()
@@ -50,11 +56,12 @@ gui.ResetOnSpawn = false
 gui.Parent = playerGui
 
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0,280,0,320)
-main.Position = UDim2.new(0.5,-140,0.5,-160)
+main.Size = UDim2.new(0,280,0,330)
+main.Position = UDim2.new(0.5,-140,0.5,-165)
 main.BackgroundColor3 = Color3.fromRGB(20,20,20)
 main.BorderSizePixel = 0
 main.Active = true
+main.Draggable = true
 main.Parent = gui
 
 -- top bar
@@ -85,46 +92,6 @@ close.MouseButton1Click:Connect(function()
 	gui.Enabled = false
 end)
 
--- drag system
-local dragging = false
-local dragStart
-local startPos
-
-main.InputBegan:Connect(function(input)
-
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
-		dragStart = input.Position
-		startPos = main.Position
-	end
-
-end)
-
-main.InputEnded:Connect(function(input)
-
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = false
-	end
-
-end)
-
-UIS.InputChanged:Connect(function(input)
-
-	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-
-		local delta = input.Position - dragStart
-
-		main.Position = UDim2.new(
-			startPos.X.Scale,
-			startPos.X.Offset + delta.X,
-			startPos.Y.Scale,
-			startPos.Y.Offset + delta.Y
-		)
-
-	end
-
-end)
-
 -- container
 local container = Instance.new("Frame")
 container.Size = UDim2.new(1,0,1,-36)
@@ -138,11 +105,11 @@ layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 layout.Parent = container
 
 -- button creator
-local function button(text,callback)
+local function makeButton(text,callback)
 
 	local b = Instance.new("TextButton")
-	b.Size = UDim2.new(0,240,0,32)
-	b.BackgroundColor3 = Color3.fromRGB(45,0,0)
+	b.Size = UDim2.new(0,240,0,34)
+	b.BackgroundColor3 = Color3.fromRGB(40,0,0)
 	b.TextColor3 = Color3.new(1,1,1)
 	b.Font = Enum.Font.GothamBold
 	b.TextSize = 14
@@ -154,21 +121,27 @@ local function button(text,callback)
 end
 
 -- buttons
-button("ESP",function()
+makeButton("ESP",function()
+
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/esp_fixed.lua")
+
 end)
 
-button("Spectate",function()
+makeButton("Spectate",function()
+
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/spectate.lua")
+
 end)
 
-button("Reward Reaper",function()
+makeButton("Reward Reaper",function()
+
 	run("https://raw.githubusercontent.com/savageducks90-droid/roblox-scripts/main/reward_reaper.lua")
+
 end)
 
--- chakra detector
+-- chakra sense detector
 local chakraLabel = Instance.new("TextLabel")
-chakraLabel.Size = UDim2.new(0,240,0,70)
+chakraLabel.Size = UDim2.new(0,240,0,80)
 chakraLabel.BackgroundTransparency = 1
 chakraLabel.TextColor3 = Color3.new(1,1,1)
 chakraLabel.Font = Enum.Font.SourceSansBold
@@ -176,7 +149,7 @@ chakraLabel.TextWrapped = true
 chakraLabel.Text = "Chakra Users: None"
 chakraLabel.Parent = container
 
-local function update()
+local function updateChakra()
 
 	local cooldowns = ReplicatedStorage:FindFirstChild("Cooldowns")
 	if not cooldowns then return end
@@ -184,9 +157,11 @@ local function update()
 	local list = {}
 
 	for _,folder in ipairs(cooldowns:GetChildren()) do
+
 		if folder:FindFirstChild("Chakra Sense") then
 			table.insert(list,folder.Name)
 		end
+
 	end
 
 	if #list == 0 then
@@ -200,7 +175,7 @@ end
 task.spawn(function()
 
 	while true do
-		update()
+		updateChakra()
 		task.wait(2)
 	end
 

@@ -25,7 +25,6 @@ end
 
 local function run(url)
 
-	-- cache bypass
 	url = url.."?"..math.random(100000,999999)
 
 	local success,code = pcall(function()
@@ -34,6 +33,11 @@ local function run(url)
 
 	if not success then
 		warn("HTTP FAILED:",url)
+		return
+	end
+
+	if string.find(code,"<!DOCTYPE") then
+		warn("SCRIPT NOT FOUND:",url)
 		return
 	end
 
@@ -195,7 +199,7 @@ button("Fruit Radar",function()
 				local text = Instance.new("TextLabel")
 				text.Size = UDim2.new(1,0,1,0)
 				text.BackgroundTransparency = 1
-				text.Text = "🍎 "..v.Name
+				text.Text = "Fruit: "..v.Name
 				text.TextColor3 = Color3.new(1,0,0)
 				text.TextScaled = true
 				text.Parent = billboard
